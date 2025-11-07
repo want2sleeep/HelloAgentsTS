@@ -1,8 +1,8 @@
-import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources';
+import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources";
 
-import type { SupportedProviders, invokeParams } from '../types/llm.js';
-import { HelloAgentsException } from '../types/exceptions.js';
+import type { SupportedProviders, invokeParams } from "../types/llm.js";
+import { HelloAgentsException } from "../types/exceptions.js";
 
 /**
  *  为HelloAgents定制的LLM客户端。
@@ -14,15 +14,15 @@ import { HelloAgentsException } from '../types/exceptions.js';
  *  - 支持多种LLM提供商
  *  - 统一的调用接口
  */
-export class HelloAgentsLLM {
-    private model: string | undefined;
-    private temperature: number;
-    private maxTokens?: number | undefined;
-    private timeout: number;
-    private kwargs: Record<string, any>;
-    private provider: SupportedProviders | undefined;
-    private apiKey: string | undefined;
-    private baseUrl: string | undefined;
+export default class HelloAgentsLLM {
+    public model: string | undefined;
+    public temperature: number;
+    public maxTokens?: number | undefined;
+    public timeout: number;
+    public kwargs: Record<string, any>;
+    public provider: SupportedProviders | undefined;
+    public apiKey: string | undefined;
+    public baseUrl: string | undefined;
     private _client: OpenAI | undefined;
 
     constructor({
@@ -43,8 +43,7 @@ export class HelloAgentsLLM {
         maxTokens?: number | undefined;
         timeout?: number;
         [key: string]: any;
-    } = {}
-    ) {
+    } = {}) {
         // 优先使用传入参数，如果未提供，则从环境变量加载
         this.model = model || process.env.LLM_MODEL_ID;
         this.temperature = temperature;
@@ -53,7 +52,7 @@ export class HelloAgentsLLM {
         this.kwargs = kwargs;
 
         // 自动检测provider或使用指定的provider
-        const requestedProvider = provider ? provider.toLowerCase() as SupportedProviders : null;
+        const requestedProvider = provider ? (provider.toLowerCase() as SupportedProviders) : null;
         this.provider = requestedProvider || this._autoDetectProvider(apiKey, baseUrl);
 
         if (requestedProvider === "custom") {
@@ -79,13 +78,13 @@ export class HelloAgentsLLM {
 
     /**
      * 自动检测LLM提供商
-     * 
+     *
      * 检测逻辑：
      * 1. 优先检查特定提供商的环境变量
      * 2. 根据API密钥格式判断
      * 3. 根据base_url判断
      * 4. 默认返回通用配置
-     * 
+     *
      * @param apiKey 可选的API密钥
      * @param baseUrl 可选的baseUrl
      * @returns 检测到的LLM提供商
@@ -133,12 +132,11 @@ export class HelloAgentsLLM {
                 else if (baseUrlLower.includes(":8080") || baseUrlLower.includes(":7860")) return "local";
                 else {
                     // 根据API密钥进一步判断
-                    if (actualApiKey && actualApiKey.toLowerCase() === "ollama") return "ollama"
-                    else if (actualApiKey && actualApiKey.toLowerCase() === "vllm") return "vllm"
-                    else return "local"
+                    if (actualApiKey && actualApiKey.toLowerCase() === "ollama") return "ollama";
+                    else if (actualApiKey && actualApiKey.toLowerCase() === "vllm") return "vllm";
+                    else return "local";
                 }
-            }
-            else if (["8080", "7860", "5000"].some(port => baseUrlLower.includes(`:${port}`))) {
+            } else if (["8080", "7860", "5000"].some(port => baseUrlLower.includes(`:${port}`))) {
                 // 常见的本地部署端口
                 return "local";
             }
@@ -148,7 +146,7 @@ export class HelloAgentsLLM {
         return "auto";
     }
 
-    /** 
+    /**
      * 根据provider解析API密钥和baseUrl
      * @param apiKey 可选的API密钥
      * @param baseUrl 可选的baseUrl
@@ -159,63 +157,57 @@ export class HelloAgentsLLM {
             case "openai":
                 return [
                     apiKey || process.env.OPENAI_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://api.openai.com/v1"
+                    baseUrl || process.env.LLM_BASE_URL || "https://api.openai.com/v1",
                 ];
             case "deepseek":
                 return [
                     apiKey || process.env.DEEPSEEK_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://api.deepseek.com"
+                    baseUrl || process.env.LLM_BASE_URL || "https://api.deepseek.com",
                 ];
             case "qwen":
                 return [
                     apiKey || process.env.DASHSCOPE_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1"
+                    baseUrl || process.env.LLM_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 ];
             case "modelscope":
                 return [
                     apiKey || process.env.MODELSCOPE_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://api-inference.modelscope.cn/v1/"
+                    baseUrl || process.env.LLM_BASE_URL || "https://api-inference.modelscope.cn/v1/",
                 ];
             case "kimi":
                 return [
                     apiKey || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://api.moonshot.cn/v1"
+                    baseUrl || process.env.LLM_BASE_URL || "https://api.moonshot.cn/v1",
                 ];
             case "zhipu":
                 return [
                     apiKey || process.env.ZHIPU_API_KEY || process.env.GLM_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://open.bigmodel.cn/api/paas/v4"
+                    baseUrl || process.env.LLM_BASE_URL || "https://open.bigmodel.cn/api/paas/v4",
                 ];
             case "ollama":
                 return [
                     apiKey || process.env.OLLAMA_API_KEY || process.env.LLM_API_KEY || "ollama",
-                    baseUrl || process.env.OLLAMA_HOST || process.env.LLM_BASE_URL || "http://localhost:11434/v1"
+                    baseUrl || process.env.OLLAMA_HOST || process.env.LLM_BASE_URL || "http://localhost:11434/v1",
                 ];
             case "vllm":
                 return [
                     apiKey || process.env.VLLM_API_KEY || process.env.LLM_API_KEY || "vllm",
-                    baseUrl || process.env.VLLM_HOST || process.env.LLM_BASE_URL || "http://localhost:8000/v1"
+                    baseUrl || process.env.VLLM_HOST || process.env.LLM_BASE_URL || "http://localhost:8000/v1",
                 ];
             case "local":
                 return [
                     apiKey || process.env.LLM_API_KEY || "local",
-                    baseUrl || process.env.LLM_BASE_URL || "http://localhost:8000/v1"
+                    baseUrl || process.env.LLM_BASE_URL || "http://localhost:8000/v1",
                 ];
             case "custom":
-                return [
-                    apiKey || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || ""
-                ];
+                return [apiKey || process.env.LLM_API_KEY || "", baseUrl || process.env.LLM_BASE_URL || ""];
             default:
                 // auto或其他情况：使用通用配置，支持任何OpenAI兼容的服务
-                return [
-                    apiKey || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || ""
-                ];
+                return [apiKey || process.env.LLM_API_KEY || "", baseUrl || process.env.LLM_BASE_URL || ""];
         }
     }
 
-    /** 
+    /**
      * 创建OpenAI客户端
      * @returns OpenAI客户端实例
      */
@@ -223,26 +215,36 @@ export class HelloAgentsLLM {
         return new OpenAI({
             apiKey: this.apiKey,
             baseURL: this.baseUrl,
-            timeout: this.timeout
+            timeout: this.timeout,
         });
     }
 
-    /** 
+    /**
      * 获取默认模型
      * @returns 默认模型名称
      */
     private _getDefaultModel(): string {
         switch (this.provider) {
-            case "openai": return "gpt-3.5-turbo";
-            case "deepseek": return "deepseek-chat";
-            case "qwen": return "qwen-plus";
-            case "modelscope": return "Qwen/Qwen2.5-72B-Instruct";
-            case "kimi": return "moonshot-v1-8k";
-            case "zhipu": return "glm-4";
-            case "ollama": return "llama3.2";  // Ollama常用模型
-            case "vllm": return "meta-llama/Llama-2-7b-chat-hf";  // vLLM常用模型
-            case "local": return "local-model";  // 本地模型占位符
-            case "custom": return this.model || "gpt-3.5-turbo";
+            case "openai":
+                return "gpt-3.5-turbo";
+            case "deepseek":
+                return "deepseek-chat";
+            case "qwen":
+                return "qwen-plus";
+            case "modelscope":
+                return "Qwen/Qwen2.5-72B-Instruct";
+            case "kimi":
+                return "moonshot-v1-8k";
+            case "zhipu":
+                return "glm-4";
+            case "ollama":
+                return "llama3.2"; // Ollama常用模型
+            case "vllm":
+                return "meta-llama/Llama-2-7b-chat-hf"; // vLLM常用模型
+            case "local":
+                return "local-model"; // 本地模型占位符
+            case "custom":
+                return this.model || "gpt-3.5-turbo";
             default:
                 // auto或其他情况：根据base_url智能推断默认模型
                 const baseUrl = process.env.LLM_BASE_URL || "";
@@ -254,7 +256,8 @@ export class HelloAgentsLLM {
                 else if (baseUrlLower.includes("moonshot")) return "moonshot-v1-8k";
                 else if (baseUrlLower.includes("bigmodel")) return "glm-4";
                 else if (baseUrlLower.includes("ollama") || baseUrlLower.includes(":11434")) return "llama3.2";
-                else if (baseUrlLower.includes("vllm") || baseUrlLower.includes(":8000")) return "meta-llama/Llama-2-7b-chat-hf";
+                else if (baseUrlLower.includes("vllm") || baseUrlLower.includes(":8000"))
+                    return "meta-llama/Llama-2-7b-chat-hf";
                 else if (baseUrlLower.includes("localhost") || baseUrlLower.includes("127.0.0.1")) return "local-model";
                 else return "gpt-3.5-turbo";
         }
@@ -292,7 +295,7 @@ export class HelloAgentsLLM {
                     // 确保在终端环境中立即刷新
                     if (process.stdout.isTTY) {
                         // 避免非终端环境下，执行无意义的空字符串写入操作（减少冗余开销、避免潜在格式问题）
-                        process.stdout.write('\x1B[0G');  // 光标移到行首（不影响内容，同样触发刷新）
+                        process.stdout.write("\x1B[0G"); // 光标移到行首（不影响内容，同样触发刷新）
                     }
 
                     yield content;
@@ -309,7 +312,7 @@ export class HelloAgentsLLM {
     /**
      * 非流式调用LLM，返回完整响应
      * 适用于不需要流式输出的场景
-     * 
+     *
      * @param messages 消息列表
      * @param kwargs 额外参数
      * @returns 完整响应文本
@@ -321,9 +324,9 @@ export class HelloAgentsLLM {
                 model: this.model || "",
                 messages: messages,
                 temperature: temperature ?? this.temperature,
-                max_tokens: (maxTokens ?? this.maxTokens) ?? null,
+                max_tokens: maxTokens ?? this.maxTokens ?? null,
                 ...otherParams,
-                ...this.kwargs
+                ...this.kwargs,
             });
             const content = response?.choices?.[0]?.message?.content;
 
@@ -345,7 +348,10 @@ export class HelloAgentsLLM {
      * @param kwargs 额外参数
      * @returns 流式响应生成器
      */
-    async *streamInvoke(messages: Array<ChatCompletionMessageParam>, kwargs: invokeParams = {}): AsyncIterableIterator<string> {
+    async *streamInvoke(
+        messages: Array<ChatCompletionMessageParam>,
+        kwargs: invokeParams = {}
+    ): AsyncIterableIterator<string> {
         yield* this.think(messages, kwargs.temperature);
     }
 }

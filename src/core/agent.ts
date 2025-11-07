@@ -1,6 +1,6 @@
-import Message from './message.js';
-import { HelloAgentsLLM } from './llm.js';
-import Config from './config.js';
+import HelloAgentsLLM from "./llm.js";
+import Config from "./config.js";
+import Message from "./message.js";
 
 /**
  * Agent 基类
@@ -9,50 +9,59 @@ import Config from './config.js';
  * - systemPrompt: 可选的系统提示
  * - config: 可选的配置
  */
-export abstract class Agent {
-  public name: string;
-  public llm: HelloAgentsLLM;
-  public systemPrompt?: string | undefined;
-  public config: Config;
+export default abstract class Agent {
+    public name: string;
+    public llm: HelloAgentsLLM;
+    public systemPrompt: string | null;
+    public config: Config;
+    protected _history: Message[] = [];
 
-  protected _history: Message[] = [];
+    constructor(
+      name: string, 
+      llm: HelloAgentsLLM, 
+      systemPrompt: string | null = null, 
+      config: Config | null = null
+    ) {
+        this.name = name;
+        this.llm = llm;
+        this.systemPrompt = systemPrompt;
+        this.config = config ?? new Config();
+    }
 
-  constructor(name: string, llm: HelloAgentsLLM, systemPrompt?: string, config?: Config) {
-    this.name = name;
-    this.llm = llm;
-    this.systemPrompt = systemPrompt;
-    this.config = config ?? new Config();
-    this._history = [];
-  }
+    /**
+     * 运行 agent 的核心方法，子类必须实现。
+     * 返回 Promise<string> 以便支持异步调用（例如调用远程 LLM）。
+     */
+    abstract run(inputText: string, kwargs?: Record<string, any>): Promise<string>;
 
-  /**
-   * 运行 agent 的核心方法，子类必须实现。
-   * 返回 Promise<string> 以便支持异步调用（例如调用远程 LLM）。
-   */
-  abstract run(inputText: string, kwargs?: Record<string, any>): Promise<string>;
+    /**
+     * 向历史记录中添加一条消息
+     * @param message 要添加的消息对象
+     */
+    addMessage(message: Message): void {
+        this._history.push(message);
+    }
 
-  add_message(message: Message): void {
-    this._history.push(message);
-  }
+    /**
+     * 清空历史记录
+     */
+    clearHistory(): void {
+        this._history = [];
+    }
 
-  clear_history(): void {
-    this._history = [];
-  }
+    /**
+     * 获取当前历史记录的副本
+     * @returns 历史记录的数组副本
+     */
+    getHistory(): Array<Message> {
+        return Array.from(this._history);
+    }
 
-  get_history(): Message[] {
-    return [...this._history];
-  }
-
-  toString(): string {
-    // llm.provider 在某些实现中可能为私有，使用 any 安全地读取（仅用于展示）
-    const provider = (this.llm as any)?.provider ?? '';
-    return `Agent(name=${this.name}, provider=${provider})`;
-  }
-
-  // 与 Python 的 __repr__ 保持一致
-  toJSON(): string {
-    return this.toString();
-  }
+    /**
+     * 重写 toString() 方法，转换为字符串格式
+     * @returns 包含角色和 LLM 提供商的字符串
+     */
+    toString(): string {
+        return `Agent(name=${this.name}, provider=${this.llm.provider})`;
+    }
 }
-
-export default Agent;

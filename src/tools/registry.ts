@@ -1,18 +1,15 @@
-import type { Tool } from "./base.js"
+import type { Tool } from "./base.js";
 
 export class ToolRegistry {
-
     register_tool(tool: Tool, auto_expand: boolean = true): void {}
 
     get_tools_description(): string {
-        return ''
+        return "";
     }
 
-    get_tool() {
-
-    }
+    get_tool() {}
 
     execute_tool(): string {
-        return ''
+        return "";
     }
 }

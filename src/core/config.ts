@@ -1,76 +1,57 @@
-// 配置管理
-/**
- * HelloAgents 配置类
- * - 提供默认值
- * - 支持从环境变量生成配置
- */
-export interface ConfigShape {
-  default_model: string;
-  default_provider: string;
-  temperature: number;
-  max_tokens?: number | null;
-  debug: boolean;
-  log_level: string;
-  max_history_length: number;
-}
+import type { ConfigOptions } from "../types/config.js";
 
-export class Config implements ConfigShape {
-  default_model = "gpt-3.5-turbo";
-  default_provider = "openai";
-  temperature = 0.7;
-  max_tokens: number | null = null;
+export default class Config {
+  // LLM 配置
+  public defaultModel: string = "gpt-3.5-turbo";
+  public defaultProvider: string = "openai";
+  public temperature: number = 0.7;
+  public maxTokens: number | null = null;
 
-  debug = false;
-  log_level = "INFO";
+  // 系统配置
+  public debug: boolean = false;
+  public logLevel: string = "INFO";
 
-  max_history_length = 100;
+  //其他配置
+  public maxHistoryLength: number = 100;
 
-  constructor(init?: Partial<ConfigShape>) {
-    if (!init) return;
-    if (init.default_model !== undefined) this.default_model = init.default_model;
-    if (init.default_provider !== undefined) this.default_provider = init.default_provider;
-    if (init.temperature !== undefined) this.temperature = init.temperature;
-    if (init.max_tokens !== undefined) this.max_tokens = init.max_tokens;
-    if (init.debug !== undefined) this.debug = init.debug;
-    if (init.log_level !== undefined) this.log_level = init.log_level;
-    if (init.max_history_length !== undefined) this.max_history_length = init.max_history_length;
+  constructor(options?: ConfigOptions) {
+    if (options) {
+      this.defaultModel = options.defaultModel ?? this.defaultModel;
+      this.defaultProvider = options.defaultProvider ?? this.defaultProvider;
+      this.temperature = options.temperature ?? this.temperature;
+      this.maxTokens = options.maxTokens ?? this.maxTokens;
+      this.debug = options.debug ?? this.debug;
+      this.logLevel = options.logLevel ?? this.logLevel;
+      this.maxHistoryLength = options.maxHistoryLength ?? this.maxHistoryLength;
+    }
   }
 
   /**
-   * 从环境变量创建配置
-   * 支持的环境变量：DEBUG, LOG_LEVEL, TEMPERATURE, MAX_TOKENS, DEFAULT_MODEL, DEFAULT_PROVIDER, MAX_HISTORY_LENGTH
+   * 从环境变量加载配置
+   * @returns 配置实例
    */
   static fromEnv(): Config {
-    const cfg = new Config();
-    const e = process.env;
-    if (e.DEBUG !== undefined) cfg.debug = String(e.DEBUG).toLowerCase() === "true";
-    if (e.LOG_LEVEL !== undefined) cfg.log_level = e.LOG_LEVEL;
-    if (e.TEMPERATURE !== undefined) cfg.temperature = parseFloat(e.TEMPERATURE);
-    if (e.MAX_TOKENS !== undefined) {
-      const n = parseInt(e.MAX_TOKENS, 10);
-      cfg.max_tokens = Number.isNaN(n) ? null : n;
-    }
-    if (e.DEFAULT_MODEL !== undefined) cfg.default_model = e.DEFAULT_MODEL;
-    if (e.DEFAULT_PROVIDER !== undefined) cfg.default_provider = e.DEFAULT_PROVIDER;
-    if (e.MAX_HISTORY_LENGTH !== undefined) {
-      const n = parseInt(e.MAX_HISTORY_LENGTH, 10);
-      if (!Number.isNaN(n)) cfg.max_history_length = n;
-    }
-    return cfg;
+    return new Config({
+      debug: process.env.DEBUG?.toLowerCase() === "true",
+      logLevel: process.env.LOG_LEVEL || "INFO",
+      temperature: process.env.TEMPERATURE ? parseFloat(process.env.TEMPERATURE) : 0.7,
+      maxTokens: process.env.MAX_TOKENS ? parseInt(process.env.MAX_TOKENS, 10) : null,
+    });
   }
 
-  /** 转换为普通字典对象 */
-  toDict(): ConfigShape {
+  /**
+   * 转换为字典对象
+   * @returns 包含所有配置项的字典
+   */
+  toDict(): ConfigOptions {
     return {
-      default_model: this.default_model,
-      default_provider: this.default_provider,
+      defaultModel: this.defaultModel,
+      defaultProvider: this.defaultProvider,
       temperature: this.temperature,
-      max_tokens: this.max_tokens,
+      maxTokens: this.maxTokens,
       debug: this.debug,
-      log_level: this.log_level,
-      max_history_length: this.max_history_length,
+      logLevel: this.logLevel,
+      maxHistoryLength: this.maxHistoryLength,
     };
   }
 }
-
-export default Config;

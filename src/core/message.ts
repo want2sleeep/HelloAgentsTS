@@ -6,12 +6,7 @@ export default class Message {
     public timestamp: Date;
     public metadata: MessageMeta;
 
-    constructor (
-        content: string, 
-        role: MessageRole, 
-        timestamp?: Date,
-        metadata?: MessageMeta,
-    ) {
+    constructor(content: string, role: MessageRole, timestamp?: Date, metadata?: MessageMeta) {
         this.content = content;
         this.role = role;
         this.timestamp = timestamp ?? new Date();
