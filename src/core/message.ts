@@ -1,25 +1,26 @@
-// 消息系统 
-export type MessageRole = "user" | "assistant" | "system" | "tool";
+import type { MessageRole, MessageMeta } from "../types/message.js";
 
-export interface MessageMeta {
-    [key: string]: any;
-}
+export default class Message {
+    public content: string;
+    public role: MessageRole;
+    public timestamp: Date;
+    public metadata: MessageMeta;
 
-export class Message {
-    content: string;
-    role: MessageRole;
-    timestamp: Date;
-    metadata: MessageMeta;
-
-    constructor(content: string, role: MessageRole, opts?: { timestamp?: Date; metadata?: MessageMeta }) {
+    constructor (
+        content: string, 
+        role: MessageRole, 
+        timestamp?: Date,
+        metadata?: MessageMeta,
+    ) {
         this.content = content;
         this.role = role;
-        this.timestamp = opts?.timestamp ?? new Date();
-        this.metadata = opts?.metadata ?? {};
+        this.timestamp = timestamp ?? new Date();
+        this.metadata = metadata ?? {};
     }
 
     /**
-     * 转换为 OpenAI API 兼容的字典格式（最小字段）
+     * 转换为 OpenAI API 兼容的字典格式
+     * @returns 包含角色和内容的字典
      */
     toDict(): { role: MessageRole; content: string } {
         return {
@@ -28,14 +29,11 @@ export class Message {
         };
     }
 
+    /**
+     * 重写 toString() 方法，转换为字符串格式
+     * @returns 包含角色和内容的字符串
+     */
     toString(): string {
         return `[${this.role}] ${this.content}`;
-    }
-
-    // 可选：从字面对象创建 Message 实例
-    static fromDict(obj: { role: MessageRole; content: string; timestamp?: string | Date; metadata?: MessageMeta }): Message {
-        const timestamp = obj.timestamp ? new Date(obj.timestamp) : new Date();
-        const metadata = obj.metadata ?? {};
-        return new Message(obj.content, obj.role, { timestamp, metadata });
     }
 }

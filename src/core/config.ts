@@ -1,4 +1,4 @@
-// 配置管理 - TypeScript 实现
+// 配置管理
 /**
  * HelloAgents 配置类
  * - 提供默认值

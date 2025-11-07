@@ -1,9 +1,9 @@
-import { Message } from './message.js';
+import Message from './message.js';
 import { HelloAgentsLLM } from './llm.js';
 import Config from './config.js';
 
 /**
- * Agent 基类（TypeScript 实现）
+ * Agent 基类
  * - name: Agent 名称
  * - llm: HelloAgentsLLM 实例
  * - systemPrompt: 可选的系统提示
@@ -31,15 +31,15 @@ export abstract class Agent {
    */
   abstract run(inputText: string, kwargs?: Record<string, any>): Promise<string>;
 
-  addMessage(message: Message): void {
+  add_message(message: Message): void {
     this._history.push(message);
   }
 
-  clearHistory(): void {
+  clear_history(): void {
     this._history = [];
   }
 
-  getHistory(): Message[] {
+  get_history(): Message[] {
     return [...this._history];
   }
 
