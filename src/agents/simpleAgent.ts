@@ -85,7 +85,7 @@ export class SimpleAgent extends Agent {
             // 检查是否有工具调用
             const toolCalls = this._parseToolCalls(response);
 
-            if (!toolCalls.length) {
+            if (toolCalls.length) {
                 // 执行所有工具调用并收集结果
                 const toolResults: string[] = [];
                 let cleanResponse = response;

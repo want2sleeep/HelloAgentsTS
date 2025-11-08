@@ -303,15 +303,12 @@ export default class HelloAgentsLLM {
      * 创建OpenAI客户端
      * @returns OpenAI客户端实例
      */
-    private _createClient(): OpenAI {
-        
-        const client = new OpenAI({
+    private _createClient(): OpenAI {        
+        return new OpenAI({
             apiKey: this.apiKey,
             baseURL: this.baseUrl,
-            timeout: this.timeout,
+            timeout: this.timeout * 1000,
         });
-        console.log('_createClient: ', this.apiKey, this.baseUrl, this.timeout, '\n', client);
-        return client;
     }
 
     /**

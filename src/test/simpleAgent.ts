@@ -18,7 +18,7 @@ for (const inputText of testInputs) {
     console.log(`Input: ${inputText}`)
     try {
         const response = await agent.run({ inputText })
-        console.log(`Response: ${response}`)
+        console.log(`Response: ${response}\n\n\n`)
     } catch (error) {
         console.error(`Error: ${error}`)
     }
