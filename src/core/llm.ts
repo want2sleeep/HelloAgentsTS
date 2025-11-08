@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources";
-
 import type { SupportedProviders, invokeParams } from "../types/llm.js";
 import { HelloAgentsException } from "../types/exceptions.js";
+import type Message from "./message.js";
 
 /**
  *  为HelloAgents定制的LLM客户端。
@@ -48,7 +48,7 @@ export default class HelloAgentsLLM {
         this.model = model || process.env.LLM_MODEL_ID;
         this.temperature = temperature;
         this.maxTokens = maxTokens;
-        this.timeout = timeout || parseInt(process.env.LLM_TIMEOUT || "60", 10);
+        this.timeout = timeout || parseInt(process.env.LLM_TIMEOUT || "180", 10);
         this.kwargs = kwargs;
 
         // 自动检测provider或使用指定的provider
@@ -74,6 +74,98 @@ export default class HelloAgentsLLM {
 
         // 创建OpenAI客户端
         this._client = this._createClient();
+    }
+
+    /**
+     * 调用大语言模型进行思考，并返回流式响应。
+     * 这是主要的调用方法，默认使用流式响应以获得更好的用户体验。
+     *
+     * @param messages 消息列表
+     * @param temperature 温度参数，如果未提供则使用初始化时的值
+     * @yields 流式响应的文本片段
+     */
+    async *think(messages: Message[], temperature?: number): AsyncIterableIterator<string> {
+        console.log(`🧠 正在调用 ${this.model} 模型...`);
+        try {
+            const response = await this._client?.chat.completions.create({
+                model: this.model || "",
+                messages: messages as ChatCompletionMessageParam[],
+                temperature: temperature ?? this.temperature,
+                max_tokens: this.maxTokens ?? null,
+                stream: true,
+            });
+
+            // 处理流式响应
+            console.log("✅ 大语言模型响应成功:");
+            if (!response) {
+                throw new HelloAgentsException("LLM 返回空响应");
+            }
+            for await (const chunk of response) {
+                const content = chunk?.choices?.[0]?.delta?.content || "";
+                if (content && content.trim() !== "") {
+                    process.stdout.write(content);
+
+                    // 确保在终端环境中立即刷新
+                    if (process.stdout.isTTY) {
+                        // 避免非终端环境下，执行无意义的空字符串写入操作（减少冗余开销、避免潜在格式问题）
+                        process.stdout.write("\x1B[0G"); // 光标移到行首（不影响内容，同样触发刷新）
+                    }
+
+                    yield content;
+                }
+            }
+            console.log(); // 流式输出结束后换行
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            console.log(`❌ 调用LLM API时发生错误: ${errorMsg}`);
+            throw new HelloAgentsException(`LLM调用失败: ${errorMsg}`);
+        }
+    }
+
+    /**
+     * 非流式调用LLM，返回完整响应
+     * 适用于不需要流式输出的场景
+     *
+     * @param messages 消息列表
+     * @param kwargs 额外参数
+     * @returns 完整响应文本
+     */
+    async invoke(messages: ChatCompletionMessageParam[], kwargs: invokeParams = {}): Promise<string> {
+        try {
+            const { temperature, maxTokens, ...otherParams } = kwargs;
+            const response = await this._client?.chat.completions.create({
+                model: this.model || "",
+                messages: messages,
+                temperature: temperature ?? this.temperature,
+                max_tokens: maxTokens ?? this.maxTokens ?? null,
+                ...otherParams,
+                ...this.kwargs,
+            });
+            const content = response?.choices?.[0]?.message?.content;
+
+            if (!content) {
+                throw new HelloAgentsException("LLM 返回空响应");
+            }
+
+            return content;
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            throw new HelloAgentsException(`LLM调用失败: ${errorMsg}`);
+        }
+    }
+
+    /**
+     * 流式调用LLM的别名方法，与think方法功能相同。
+     * 保持向后兼容性。
+     * @param messages 消息列表
+     * @param kwargs 额外参数
+     * @returns 流式响应生成器
+     */
+    async *streamInvoke(
+        messages: Message[],
+        kwargs: invokeParams = {}
+    ): AsyncIterableIterator<string> {
+        yield* this.think(messages, kwargs.temperature);
     }
 
     /**
@@ -162,7 +254,7 @@ export default class HelloAgentsLLM {
             case "deepseek":
                 return [
                     apiKey || process.env.DEEPSEEK_API_KEY || process.env.LLM_API_KEY || "",
-                    baseUrl || process.env.LLM_BASE_URL || "https://api.deepseek.com",
+                    baseUrl || process.env.LLM_BASE_URL || "https://api.deepseek.com/v1",
                 ];
             case "qwen":
                 return [
@@ -212,11 +304,14 @@ export default class HelloAgentsLLM {
      * @returns OpenAI客户端实例
      */
     private _createClient(): OpenAI {
-        return new OpenAI({
+        
+        const client = new OpenAI({
             apiKey: this.apiKey,
             baseURL: this.baseUrl,
             timeout: this.timeout,
         });
+        console.log('_createClient: ', this.apiKey, this.baseUrl, this.timeout, '\n', client);
+        return client;
     }
 
     /**
@@ -262,96 +357,5 @@ export default class HelloAgentsLLM {
                 else return "gpt-3.5-turbo";
         }
     }
-
-    /**
-     * 调用大语言模型进行思考，并返回流式响应。
-     * 这是主要的调用方法，默认使用流式响应以获得更好的用户体验。
-     *
-     * @param messages 消息列表
-     * @param temperature 温度参数，如果未提供则使用初始化时的值
-     * @yields 流式响应的文本片段
-     */
-    async *think(messages: Array<ChatCompletionMessageParam>, temperature?: number): AsyncIterableIterator<string> {
-        console.log(`🧠 正在调用 ${this.model} 模型...`);
-        try {
-            const response = await this._client?.chat.completions.create({
-                model: this.model || "",
-                messages: messages,
-                temperature: temperature ?? this.temperature,
-                max_tokens: this.maxTokens ?? null,
-                stream: true,
-            });
-
-            // 处理流式响应
-            console.log("✅ 大语言模型响应成功:");
-            if (!response) {
-                throw new HelloAgentsException("LLM 返回空响应");
-            }
-            for await (const chunk of response) {
-                const content = chunk?.choices?.[0]?.delta?.content || "";
-                if (content && content.trim() !== "") {
-                    process.stdout.write(content);
-
-                    // 确保在终端环境中立即刷新
-                    if (process.stdout.isTTY) {
-                        // 避免非终端环境下，执行无意义的空字符串写入操作（减少冗余开销、避免潜在格式问题）
-                        process.stdout.write("\x1B[0G"); // 光标移到行首（不影响内容，同样触发刷新）
-                    }
-
-                    yield content;
-                }
-            }
-            console.log(); // 流式输出结束后换行
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error);
-            console.log(`❌ 调用LLM API时发生错误: ${errorMsg}`);
-            throw new HelloAgentsException(`LLM调用失败: ${errorMsg}`);
-        }
-    }
-
-    /**
-     * 非流式调用LLM，返回完整响应
-     * 适用于不需要流式输出的场景
-     *
-     * @param messages 消息列表
-     * @param kwargs 额外参数
-     * @returns 完整响应文本
-     */
-    async invoke(messages: Array<ChatCompletionMessageParam>, kwargs: invokeParams = {}): Promise<string> {
-        try {
-            const { temperature, maxTokens, ...otherParams } = kwargs;
-            const response = await this._client?.chat.completions.create({
-                model: this.model || "",
-                messages: messages,
-                temperature: temperature ?? this.temperature,
-                max_tokens: maxTokens ?? this.maxTokens ?? null,
-                ...otherParams,
-                ...this.kwargs,
-            });
-            const content = response?.choices?.[0]?.message?.content;
-
-            if (!content) {
-                throw new HelloAgentsException("LLM 返回空响应");
-            }
-
-            return content;
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error);
-            throw new HelloAgentsException(`LLM调用失败: ${errorMsg}`);
-        }
-    }
-
-    /**
-     * 流式调用LLM的别名方法，与think方法功能相同。
-     * 保持向后兼容性。
-     * @param messages 消息列表
-     * @param kwargs 额外参数
-     * @returns 流式响应生成器
-     */
-    async *streamInvoke(
-        messages: Array<ChatCompletionMessageParam>,
-        kwargs: invokeParams = {}
-    ): AsyncIterableIterator<string> {
-        yield* this.think(messages, kwargs.temperature);
-    }
 }
+

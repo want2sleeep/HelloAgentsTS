@@ -3,14 +3,19 @@ import type { MessageRole, MessageMeta } from "../types/message.js";
 export default class Message {
     public content: string;
     public role: MessageRole;
-    public timestamp: Date;
-    public metadata: MessageMeta;
+    public timestamp?: Date;
+    public metadata?: MessageMeta;
 
-    constructor(content: string, role: MessageRole, timestamp?: Date, metadata?: MessageMeta) {
-        this.content = content;
+    constructor(
+        role: MessageRole,
+        content: string,
+        timestamp?: Date,
+        metadata?: MessageMeta
+    ) {
         this.role = role;
+        this.content = content;
         this.timestamp = timestamp ?? new Date();
-        this.metadata = metadata ?? {};
+        this.metadata = metadata;
     }
 
     /**

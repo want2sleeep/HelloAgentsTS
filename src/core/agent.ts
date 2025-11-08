@@ -13,14 +13,14 @@ export default abstract class Agent {
     public name: string;
     public llm: HelloAgentsLLM;
     public systemPrompt: string | null;
-    public config: Config;
+    public config: Config | null;
     protected _history: Message[] = [];
 
     constructor(
-      name: string, 
-      llm: HelloAgentsLLM, 
-      systemPrompt: string | null = null, 
-      config: Config | null = null
+        name: string,
+        llm: HelloAgentsLLM,
+        systemPrompt: string | null = null,
+        config: Config | null = null
     ) {
         this.name = name;
         this.llm = llm;
@@ -32,7 +32,13 @@ export default abstract class Agent {
      * 运行 agent 的核心方法，子类必须实现。
      * 返回 Promise<string> 以便支持异步调用（例如调用远程 LLM）。
      */
-    abstract run(inputText: string, kwargs?: Record<string, any>): Promise<string>;
+    abstract run({
+        inputText,
+        ...kwargs
+    }: {
+        inputText: string,
+        [key: string]: any
+    }): Promise<string>;
 
     /**
      * 向历史记录中添加一条消息
@@ -53,7 +59,7 @@ export default abstract class Agent {
      * 获取当前历史记录的副本
      * @returns 历史记录的数组副本
      */
-    getHistory(): Array<Message> {
+    getHistory(): Message[] {
         return Array.from(this._history);
     }
 

@@ -1,15 +1,37 @@
 import type { Tool } from "./base.js";
 
 export class ToolRegistry {
-    register_tool(tool: Tool, auto_expand: boolean = true): void {}
+    registerTool(tool: Tool, autoExpand: boolean = true): void {}
 
-    get_tools_description(): string {
+    registerFunction(name: string, description: string, callback: string): void {}
+
+    unregisterTool(name: string): void {}
+
+    getTool(name: string): Tool | null {
+        return null;
+    }
+
+    getFunction (name: string) {
+        return null;
+    }
+
+    executeTool(name: string, arguments_: string): string {
         return "";
     }
 
-    get_tool() {}
 
-    execute_tool(): string {
+    getToolsDescription(): string {
         return "";
+    }
+    listTools(): string[] {
+        return [];
+    }
+
+    getAllTools(): Tool[] {
+        // 获取所有Tool对象
+        return [];
+    }
+
+    clear(): void {
     }
 }
