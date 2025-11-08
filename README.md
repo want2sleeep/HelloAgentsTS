@@ -4,7 +4,7 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://choosealicense.com/licenses/mit/)
+[![CC License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg?style=for-the-badge)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 ## ✨ 主要特点
 
@@ -369,7 +369,7 @@ Agent 抽象基类。
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+本项目采用 CC BY-NC-SA 4.0 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
 ## 🙏 致谢
 
