@@ -83,7 +83,7 @@ export function toolAction(name?: string, description?: string) {
 /**
  * 工具参数定义
  */
-interface ToolParameter {
+export interface ToolParameter {
     name: string;
     type: string;
     description: string;
