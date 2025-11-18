@@ -53,3 +53,18 @@ export class ToolException extends HelloAgentsException {
         Object.setPrototypeOf(this, ToolException.prototype);
     }
 }
+
+// 定义“值无效”的自定义错误类（对应 Python 的 ValueError）
+export class ValueError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ValueError"; // 明确错误名称，便于上层捕获时区分
+  }
+}
+
+export class RuntimeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RuntimeError"; // 明确错误名称，便于上层捕获时区分
+  }
+}
