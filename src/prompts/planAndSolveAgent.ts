@@ -7,7 +7,7 @@ const DEFAULT_PLANNER_PROMPT = `
 问题: {question}
 
 请严格按照以下格式输出你的计划:
-\`\`\`python
+\`\`\`typescript
 ["步骤1", "步骤2", "步骤3", ...]
 \`\`\`
 `;
@@ -28,7 +28,7 @@ const DEFAULT_EXECUTOR_PROMPT = `
 {history}
 
 # 当前步骤:
-{current_step}
+{currentStep}
 
 请仅输出针对"当前步骤"的回答:
 `;

@@ -10,7 +10,7 @@ import type { Tool } from "./base.js";
  */
 export class ToolRegistry {
     private _tools: Map<string, Tool> = new Map();
-    private _functions: Map<string, { description: string; func: any }> = new Map();
+    _functions: Map<string, { description: string; func: any }> = new Map();
 
     /**
      * 注册 Tool 对象

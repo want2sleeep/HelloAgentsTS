@@ -15,18 +15,18 @@ import type Message from "./message.js";
  *  - 统一的调用接口
  */
 export default class HelloAgentsLLM {
-    public model: string | undefined;
-    public temperature: number;
-    public maxTokens?: number | undefined;
-    public timeout: number;
-    public kwargs: Record<string, any>;
-    public provider: SupportedProviders | undefined;
-    public apiKey: string | undefined;
-    public baseUrl: string | undefined;
-    private _client: OpenAI | undefined;
+    model: string;
+    temperature: number;
+    maxTokens?: number | undefined;
+    timeout: number;
+    kwargs: Record<string, any>;
+    provider: SupportedProviders | undefined;
+    apiKey: string | undefined;
+    baseUrl: string | undefined;
+    _client: OpenAI | undefined;
 
     constructor({
-        model,
+        model = "",
         apiKey,
         baseUrl,
         provider,
@@ -45,7 +45,7 @@ export default class HelloAgentsLLM {
         [key: string]: any;
     } = {}) {
         // 优先使用传入参数，如果未提供，则从环境变量加载
-        this.model = model || process.env.LLM_MODEL_ID;
+        this.model = model || process.env.LLM_MODEL_ID || "";
         this.temperature = temperature;
         this.maxTokens = maxTokens;
         this.timeout = timeout || parseInt(process.env.LLM_TIMEOUT || "180", 10);

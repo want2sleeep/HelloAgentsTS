@@ -25,7 +25,7 @@ const DEFAULT_PROMPTS = {
 {task}
 
 # 上一轮回答:
-{last_attempt}
+{lastAttempt}
 
 # 反馈意见:
 {feedback}

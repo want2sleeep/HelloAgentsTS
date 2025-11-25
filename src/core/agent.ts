@@ -19,8 +19,8 @@ export default abstract class Agent {
     constructor(
         name: string,
         llm: HelloAgentsLLM,
-        systemPrompt: string | null = null,
-        config: Config | null = null
+        systemPrompt: string | null | undefined = null,
+        config: Config | null | undefined = null
     ) {
         this.name = name;
         this.llm = llm;

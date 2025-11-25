@@ -9,7 +9,7 @@ const DEFAULT_PROMPT = `你是一个具备推理和行动能力的AI助手。你
 
 Thought: 分析问题，确定需要什么信息，制定研究策略。
 Action: 选择合适的工具获取信息，格式为：
-- \`{tool_name}[{tool_input}]\`：调用工具获取信息。
+- \`{toolName}[{toolInput}]\`：调用工具获取信息。
 - \`Finish[研究结论]\`：当你有足够信息得出结论时。
 
 ## 重要提醒
