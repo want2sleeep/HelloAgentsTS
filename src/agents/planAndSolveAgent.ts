@@ -34,12 +34,13 @@ class Planner {
 
         try {
             // 提取TypeScript代码块中的列表
-            const planMatch = responseText.match(/```typescript([\s\S]*?)```/);
-            if (!planMatch || !planMatch[0]) {
+            // 使用更精确的正则表达式，避免匹配到模板中的代码块
+            const planMatch = responseText.match(/```typescript\s*\n?([\s\S]*?)\n?\s*```/);
+            if (!planMatch || !planMatch[1]) {
                 throw new Error("未找到有效的计划代码块");
             }
 
-            const planStr = planMatch[0].trim();
+            const planStr = planMatch[1].trim();
             const plan = AST.literalEval(planStr);
 
             return Array.isArray(plan) && plan.every(i => typeof i === 'string') ? plan : [];
@@ -133,8 +134,8 @@ export default class PlanAndSolveAgent extends Agent {
 
         // 设置提示词模板：用户自定义有限，否则使用默认模板
         if (customPrompts) {
-            plannerPrompt = customPrompts['planner'];
-            executorPrompt = customPrompts['executor'];
+            plannerPrompt = customPrompts.planner;
+            executorPrompt = customPrompts.executor;
         }
 
         this.planner = new Planner(llm, plannerPrompt);

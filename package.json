@@ -21,8 +21,9 @@
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
         "format": "prettier --write .",
-        "test": "tsx src/test/simpleAgent.ts",
-        "test:first": "tsx --env-file .env src/test/firstAgent.ts",
+        "test:simpleAgent": "tsx --env-file .env src/tests/simpleAgent.ts",
+        "test:firstAgent": "tsx --env-file .env src/tests/firstAgent.ts",
+        "test:planAndSolveAgent": "tsx --env-file .env src/tests/planAndSolveAgent.ts",
         "sync:version": "node script/syncVersion.js"
     },
     "packageManager": "pnpm@10.18.1",
